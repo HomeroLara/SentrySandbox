@@ -106,6 +106,7 @@ public static class MauiProgram
             })
             .ConfigureHttpClient(httpClient =>
             {
+                
                 httpClient.BaseAddress = new Uri("https://cnk.wiremockapi.cloud/");
                 CnkApiHelpers.AddCnkStandardHeaders(httpClient.DefaultRequestHeaders);
             })
