@@ -1,6 +1,10 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Controls.Hosting;
+using Microsoft.Maui.Hosting;
 using PollySandbox.Services;
 using Refit;
 using Sentry;
@@ -19,9 +23,7 @@ public static class MauiProgram
             
             .UseSentry(options =>
             {
-                // Description of all options can be found here:
-                // https://docs.sentry.io/platforms/dotnet/guides/maui/configuration/options/
-                options.Dsn = "[-- ADD DNS ENTRY HERE --]";
+                options.Dsn = "[YOUR DNS ENTRY HERE]";
                 options.StackTraceMode = StackTraceMode.Enhanced;
                 options.IsGlobalModeEnabled = true;
              
@@ -104,8 +106,7 @@ public static class MauiProgram
             })
             .ConfigureHttpClient(httpClient =>
             {
-                var baseAddress = new Uri("https://www.somebaseaddress.com/");
-                httpClient.BaseAddress = baseAddress;
+                httpClient.BaseAddress = new Uri("https://cnk.wiremockapi.cloud/");
                 CnkApiHelpers.AddCnkStandardHeaders(httpClient.DefaultRequestHeaders);
             })
             .ConfigurePrimaryHttpMessageHandler(_ =>
