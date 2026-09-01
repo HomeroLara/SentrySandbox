@@ -23,7 +23,7 @@ public static class MauiProgram
             
             .UseSentry(options =>
             {
-                options.Dsn = "[YOUR DNS ENTRY HERE]";
+                options.Dsn = "[YOUR SENTRY_DSN_HERE]";
                 options.StackTraceMode = StackTraceMode.Enhanced;
                 options.IsGlobalModeEnabled = true;
              
@@ -31,7 +31,6 @@ public static class MauiProgram
                 //var appInfo = new iOSAppInfo();
                 options.Release = $"iOS 1.0";
                 // options.Native.EnableSwizzling = false;
-                
                 // options.Native.EnableNetworkBreadcrumbs = false;
                 // options.Native.EnableNetworkTracking = false;
                 // options.Native.EnableTracing = false;
@@ -106,8 +105,8 @@ public static class MauiProgram
             })
             .ConfigureHttpClient(httpClient =>
             {
-                
-                httpClient.BaseAddress = new Uri("https://cnk.wiremockapi.cloud/");
+
+                httpClient.BaseAddress = new Uri("https://jylry.wiremockapi.cloud/");
                 CnkApiHelpers.AddCnkStandardHeaders(httpClient.DefaultRequestHeaders);
             })
             .ConfigurePrimaryHttpMessageHandler(_ =>
@@ -115,31 +114,30 @@ public static class MauiProgram
                 var platformHttpMessageHandler = CnkApiHelpers.GetPlatformHttpMessageHandler();
                 return platformHttpMessageHandler;
             })
-            .AddStandardResilienceHandler(options =>
+        .AddStandardResilienceHandler(options =>
+        {
+            options.Retry.MaxRetryAttempts = 3;
+            options.Retry.BackoffType = 0;
+            options.Retry.UseJitter = true;
+            options.Retry.Delay = TimeSpan.FromSeconds(3);
+        
+            // Per-attempt timeout
+            options.AttemptTimeout.Timeout = new TimeSpan(0, 0, 30); //TimeSpan.FromSeconds(resilienceConfig.AttemptTimeout.TimeoutSeconds);
+        
+            // Overall timeout budget
+            options.TotalRequestTimeout = new HttpTimeoutStrategyOptions()
             {
-
-                options.Retry.MaxRetryAttempts = 3;
-                options.Retry.BackoffType = 0;
-                options.Retry.UseJitter = true;
-                options.Retry.Delay = TimeSpan.FromSeconds(0);
-            
-                // Per-attempt timeout
-                options.AttemptTimeout.Timeout = new TimeSpan(0, 0, 30); //TimeSpan.FromSeconds(resilienceConfig.AttemptTimeout.TimeoutSeconds);
-            
-                // Overall timeout budget
-                options.TotalRequestTimeout = new HttpTimeoutStrategyOptions()
-                {
-                    Timeout = TimeSpan.FromSeconds(30)
-                };
-            
-                // Adjust circuit breaker so sampling >= 2 * attempt timeout (>= 60s)
-                options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(70); // or 60+
-                // (Optional) tune other CB settings if desired:
-                // options.CircuitBreaker.MinimumThroughput = 10;
-                // options.CircuitBreaker.FailureRatio = 0.2;
-            
-                // If you prefer to disable instead:
-                // options.CircuitBreaker.Enabled = false;
-            });
+                Timeout = TimeSpan.FromSeconds(30)
+            };
+        
+            // Adjust circuit breaker so sampling >= 2 * attempt timeout (>= 60s)
+            options.CircuitBreaker.SamplingDuration = TimeSpan.FromSeconds(70); // or 60+
+            // (Optional) tune other CB settings if desired:
+            // options.CircuitBreaker.MinimumThroughput = 10;
+            // options.CircuitBreaker.FailureRatio = 0.2;
+        
+            // If you prefer to disable instead:
+            // options.CircuitBreaker.Enabled = false;
+        });
     }
 }
